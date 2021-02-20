@@ -1,2 +1,2 @@
 # rec-file-organizer
-TV録画ファイルを自動でフォルダ整理するスクリプト
+EPGDataCap_BonのTV録画ファイルを自動でフォルダ整理するプログラム
