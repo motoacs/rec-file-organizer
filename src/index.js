@@ -20,7 +20,6 @@ async function init() {
 
   intervalId = setInterval(main, conf.intervalMinutes * 60 * 1000);
   main();
-  // await sleep(5000);
 }
 
 
@@ -30,7 +29,7 @@ async function main() {
   // conf.json読み込み
   const cf = await fs.readFile('./conf.json').catch(async (e) => {
     error(`Error: conf.jsonの読み込みに失敗: ${e}`);
-    await sleep(10000);
+    debug && await sleep(10000);
     return;
   });
   conf = JSON.parse(cf);
@@ -39,7 +38,7 @@ async function main() {
   // ファイル一覧を取得
   var files = await fs.readdir(conf.sourceDir).catch(async (e) => {
     error(`Error: ターゲットディレクトリの読み込みに失敗: ${e}`);
-    await sleep(10000);
+    debug && await sleep(10000);
     return;
   });
   debug && log(`AllFiles: ${JSON.stringify(files)}`);
@@ -53,7 +52,7 @@ async function main() {
     }
 
     // まだ新しいファイルなら
-    else debug && log(`Pass: 移動非外ファイル: ${files[idx]}`);
+    else debug && log(`Pass: 対象外ファイル: ${files[idx]}`);
   }
 }
 
