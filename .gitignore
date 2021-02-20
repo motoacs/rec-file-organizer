@@ -1,3 +1,7 @@
+# conf
+/bin/conf.json
+/conf.json
+
 # Logs
 logs
 *.log

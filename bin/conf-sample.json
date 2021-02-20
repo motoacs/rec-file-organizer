@@ -1,0 +1,53 @@
+{
+  "testMode": false,
+
+  "sourceDir": "Z:/TvEncoded/",
+  "targetDir": "Z:/TvEncoded/",
+  "logDir": "./",
+
+  "thresholdDays": 7,
+  "intervalMinutes": 1,
+
+  "rules": [
+    {
+      "dest": "BS1スペシャル",
+      "match": "ＢＳ１スペシャル"
+    },
+    {
+      "dest": "BS世界のドキュメンタリー",
+      "match": "ＢＳ世界のドキュメンタリー"
+    },
+    {
+      "dest": "NHKスペシャル",
+      "match": "ＮＨＫスペシャル"
+    },
+    {
+      "dest": "SONGS",
+      "match": "ＳＯＮＧＳ「"
+    },
+    {
+      "dest": "SONGS OF TOKYO",
+      "match": "ＳＯＮＧＳ　ＯＦ　ＴＯＫＹＯ"
+    },
+    {
+      "dest": "中井精也の鉄道写真旅",
+      "match": "中井精也の((てつたび！)|(鉄道写真旅))"
+    },
+    {
+      "dest": "__放送中アニメ/Re：ゼロから始める異世界生活 2nd season",
+      "match": "((Re)|(Ｒｅ))：ゼロから始める異世界生活"
+    },
+    {
+      "dest": "__放送中アニメ/のんのんびより のんすとっぷ",
+      "match": "のんのんびより　のんすとっぷ"
+    },
+    {
+      "dest": "__放送中アニメ/はたらく細胞!!",
+      "match": "はたらく細胞!!"
+    },
+    {
+      "dest": "__放送中アニメ/はたらく細胞BLACK",
+      "match": "はたらく細胞BLACK"
+    }
+  ]
+}
