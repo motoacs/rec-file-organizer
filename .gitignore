@@ -1,6 +1,5 @@
 # conf
-/bin/conf.json
-/conf.json
+/recfileorganizer.json
 
 # Logs
 log.txt

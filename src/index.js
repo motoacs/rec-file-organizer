@@ -1,29 +1,31 @@
 const fs = require('fs').promises;
 const moveFile = require('move-file');
 
-// 読み込んだconf.json
-let conf
+// 設定ファイルのパス
+const CONF_JSON_PATH = './RecFileOrganizer.json';
+// 読み込んだ設定JSON
+let conf;
 // mainのタイマーid
 let intervalIdMain;
 // ログ保存のタイマーid
 let intervalIdLog;
-// ログ
+// ログを一時的に溜めるArray
 let logs = [];
 
 // デバッグモード
 const debug = false;
-// テストモード（ファイルを移動しない）
+// テストモード（ファイルを移動しない） JSONの設定値で上書き
 let testMode = true;
 
 
 // initialize
 async function init() {
-  const cf = await fs.readFile('./conf.json').catch(async (e) => {
+  const confJson = await fs.readFile(CONF_JSON_PATH).catch(async (e) => {
     error(`Error: conf.jsonの読み込みに失敗: ${e}`);
     await sleep(10000);
     return;
   });
-  conf = JSON.parse(cf);
+  conf = JSON.parse(confJson);
   testMode = conf.testMode;
 
   intervalId = setInterval(main, conf.intervalMinutes * 60 * 1000);
@@ -34,41 +36,67 @@ async function init() {
 
 async function main() {
   // EDCB録画ファイルの日時表記 yyyyMMddhhmmss????
-  const reg = /^20\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d/;
+  const reg = /20\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d/;
   // conf.json読み込み
-  const cf = await fs.readFile('./conf.json').catch(async (e) => {
+  const cf = await fs.readFile(CONF_JSON_PATH).catch(async (e) => {
     error(`Error: conf.jsonの読み込みに失敗: ${e}`);
-    debug && await sleep(10000);
+    debug && (await sleep(10000));
     return;
   });
   conf = JSON.parse(cf);
   debug && log(`Loaded: conf.json = ${JSON.stringify(conf)}`);
 
+  // ==================================================================
+  // リネーム
+  // ==================================================================
   // ファイル一覧を取得
   var files = await fs.readdir(conf.sourceDir).catch(async (e) => {
     error(`Error: ターゲットディレクトリの読み込みに失敗: ${e}`);
-    debug && await sleep(10000);
+    debug && (await sleep(10000));
     return;
   });
+
   debug && log(`AllFiles: ${JSON.stringify(files)}`);
 
-
   for (let i = 0; i < files.length; i++) {
+    // 切れ端ファイルを移動
     var fragment = await isFragment(files[i]);
-    debug && log(`moveFragment: ${fragment}: ${files[i]}`);
 
     // Amatsukazeの切れ端ファイルなら
-    if (fragment && !testMode) {
+    if (fragment) {
+      log(`Fragment: ${files[i]} ▶ ${conf.fragmentDir}`);
       // 切れ端用フォルダに移動
-      await moveFile(
-        `${conf.sourceDir}${files[i]}`,
-        `${conf.fragmentDir}${files[i]}`,
-        { overwrite: true },
-      ).catch((e) => error(`Error: moveFragment: ${e}`));
+      !testMode &&
+        (await moveFile(`${conf.sourceDir}${files[i]}`, `${conf.fragmentDir}${files[i]}`, { overwrite: true }).catch((e) =>
+          error(`Error: moveFragment: ${e}`)
+        ));
     }
 
+    // ファイル名の先頭に日時文字列があれば
+    else if (/^20\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d/.test(files[i])) {
+      // 日時とタイトルをひっくり返す
+      var newFileName = getTitleDateReverted(files[i]);
+      // [再] などの記号を取り除く
+      newFileName = getTitleSymbolRemoved(newFileName);
+
+      log(`Rename: ${files[i]} ▷ ${newFileName}`);
+      !testMode && (await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`));
+    }
+  }
+
+  // ==================================================================
+  // 移動
+  // ==================================================================
+  // ファイル一覧を再取得
+  files = await fs.readdir(conf.sourceDir).catch(async (e) => {
+    error(`Error: ターゲットディレクトリの読み込みに失敗: ${e}`);
+    debug && (await sleep(10000));
+    return;
+  });
+
+  for (let i = 0; i < files.length; i++) {
     // 設定日数より経過したファイルなら
-    else if (reg.test(files[i]) && isOld(files[i], conf.thresholdDays)) {
+    if (reg.test(files[i]) && isOld(files[i].match(reg)[0], conf.thresholdDays)) {
       // ファイルを移動
       await move(files[i]).catch((e) => error(e));
     }
@@ -85,7 +113,7 @@ function move(file) {
     const matchedRule = conf.rules.filter((rule) => new RegExp(rule.match).test(file));
     if (matchedRule.length > 0) {
       debug && log(`RuleFound: ${JSON.stringify(matchedRule[0])}`);
-      log(`Move: ${file}  ▶  ${matchedRule[0].dest}/${file}`);
+      log(`Move: ${file}  ▶  ${matchedRule[0].dest}/`);
       // テストモードでなければ
       if (!testMode){
         // 移動
@@ -99,7 +127,7 @@ function move(file) {
         );
       }
       else {
-        log(`TestMode: Move: ${conf.sourceDir}${file}  ▶  ${conf.targetDir}${matchedRule[0].dest}/${file}`);
+        // log(`TestMode: Move: ${conf.sourceDir}${file}  ▶  ${conf.targetDir}${matchedRule[0].dest}/${file}`);
         resolve();
       }
     }
@@ -108,6 +136,22 @@ function move(file) {
       resolve();
     }
   });
+}
+
+
+// "yyyyMMddhhmmss010*-Program Title.mkv" → "Program Title-yyyyMMddhhmmss010*.mkv"
+function getTitleDateReverted(fileName) {
+  const dateStr = fileName.match(/^20\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d/)[0];
+  const extension = fileName.match(/(mp4|mkv|webm|ts|m2ts)$/)[0];
+  const title = fileName.replace(/^20\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d-/, '').replace(/\.(mp4|mkv|webm|ts|m2ts)$/, '');
+
+  return `${title}-${dateStr}.${extension}`;
+}
+
+
+// [再]などを取り除く
+function getTitleSymbolRemoved(fileName) {
+  return fileName.replace(/(\[再\]|\[二\]|\[双\]|\[解\]|\[字\]|\[終\]|\[新\])/g, '');
 }
 
 
