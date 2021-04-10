@@ -66,10 +66,11 @@ async function main() {
     if (fragment) {
       log(`Fragment: ${files[i]} ▶ ${conf.fragmentDir}`);
       // 切れ端用フォルダに移動
-      !testMode &&
-        (await moveFile(`${conf.sourceDir}${files[i]}`, `${conf.fragmentDir}${files[i]}`, { overwrite: true }).catch((e) =>
-          error(`Error: moveFragment: ${e}`)
-        ));
+      if (!testMode) {
+        await moveFile(`${conf.sourceDir}${files[i]}`, `${conf.fragmentDir}${files[i]}`, { overwrite: true }).catch((e) => {
+          error(`Error: moveFragment: ${e}`);
+        });
+      }
     }
 
     // ファイル名の先頭に日時文字列があれば
@@ -80,7 +81,11 @@ async function main() {
       newFileName = getTitleFormatted(newFileName);
 
       log(`Rename: ${files[i]} ▷ ${newFileName}`);
-      !testMode && (await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`));
+      if (!testMode) {
+        await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`).catch((e) => {
+          error(`Error: Rename: ${files[i]}  ${e}`);
+        });
+      }
     }
   }
 
