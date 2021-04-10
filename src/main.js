@@ -67,9 +67,7 @@ async function main() {
       log(`Fragment: ${files[i]} ▶ ${conf.fragmentDir}`);
       // 切れ端用フォルダに移動
       if (!testMode) {
-        await moveFile(`${conf.sourceDir}${files[i]}`, `${conf.fragmentDir}${files[i]}`, { overwrite: true }).catch((e) => {
-          error(`Error: moveFragment: ${e}`);
-        });
+        await moveFile(`${conf.sourceDir}${files[i]}`, `${conf.fragmentDir}${files[i]}`, { overwrite: true }).catch((e) => error(`Error: moveFragment: ${e}`));
       }
     }
 
@@ -82,9 +80,7 @@ async function main() {
 
       log(`Rename: ${files[i]} ▷ ${newFileName}`);
       if (!testMode) {
-        await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`).catch((e) => {
-          error(`Error: Rename: ${files[i]}  ${e}`);
-        });
+        await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`).catch((e) => error(`Error: Rename: ${files[i]}  ${e}`));
       }
     }
   }
@@ -103,7 +99,7 @@ async function main() {
     // 設定日数より経過したファイルなら
     if (reg.test(files[i]) && isOld(files[i].match(reg)[0], conf.thresholdDays)) {
       // ファイルを移動
-      await move(files[i]).catch((e) => error(e));
+      await move(files[i]).catch((e) => error(`Error: move: ${files[i]}  ${e}`));
     }
 
     // まだ新しいファイルなら
@@ -173,7 +169,7 @@ function isFragment(fileName) {
     // ファイル名が -1.mkv などだったら
     if (/-\d\.mkv$/.test(fileName)) {
       // ファイルサイズを取得
-      const stat = await fs.stat(`${conf.sourceDir}${fileName}`).catch((e) => error(`Error: isFragment: ${e}`));
+      const stat = await fs.stat(`${conf.sourceDir}${fileName}`).catch((e) => error(`Error: isFragment: ${fileName}  ${e}`));
       debug && log(`isFragment: ${fileName}: ${stat.size}`);
 
       resolve(stat.size < 50 * 1024 * 1024); // 50MB未満ならtrue
