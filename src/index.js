@@ -77,7 +77,7 @@ async function main() {
       // 日時とタイトルをひっくり返す
       var newFileName = getTitleDateReverted(files[i]);
       // [再] などの記号を取り除く
-      newFileName = getTitleSymbolRemoved(newFileName);
+      newFileName = getTitleFormatted(newFileName);
 
       log(`Rename: ${files[i]} ▷ ${newFileName}`);
       !testMode && (await fs.rename(`${conf.sourceDir}${files[i]}`, `${conf.sourceDir}${newFileName}`));
@@ -150,8 +150,15 @@ function getTitleDateReverted(fileName) {
 
 
 // [再]などを取り除く
-function getTitleSymbolRemoved(fileName) {
-  return fileName.replace(/(\[再\]|\[二\]|\[双\]|\[解\]|\[字\]|\[終\]|\[新\])/g, '');
+function getTitleFormatted(fileName) {
+  let ret = fileName.replace(/(\[再\]|\[二\]|\[双\]|\[解\]|\[字\]|\[終\]|\[新\]|\[S\])/g, '');
+  ret = ret.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => String.fromCharCode(s.charCodeAt(0) - 0xfee0));
+  ret = ret.replace(/　/g, ' ');
+
+  // 題1話 → 題01話
+  const idx = ret.search(/第\d話/);
+  if (idx >= 0) ret = `${ret.slice(0, idx + 1)}0${ret.slice(idx + 1)}`;
+  return ret;
 }
 
 
