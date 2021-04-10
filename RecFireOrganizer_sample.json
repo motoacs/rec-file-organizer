@@ -1,12 +1,12 @@
 {
-  "testMode": true,
+  "testMode": false,
 
-  "sourceDir": "Z:/TvEncoded/",
-  "targetDir": "Z:/TvEncoded/",
-  "fragmentDir": "Z:/TvEncoded/_Fragments/",
+  "sourceDir": "T:/",
+  "targetDir": "T:/",
+  "fragmentDir": "T:/_Fragments/",
   "logDir": "./",
 
-  "thresholdDays": 0,
+  "thresholdDays": 7,
   "intervalMinutes": 1,
 
   "rules": [

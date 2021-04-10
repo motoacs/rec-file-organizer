@@ -2,10 +2,10 @@
   "name": "rec-file-organizer",
   "version": "1.0.0",
   "description": "EPGDataCap_BonのTV録画ファイルを自動でフォルダ整理するプログラム",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "build": "nexe ./src/index.js -o ./RecFileOrganizer.exe -t x64-12.18.2",
-    "run": "node ./src/index.js"
+    "build": "nexe ./src/main.js -o ./RecFileOrganizer.exe -t x64-12.18.2",
+    "run": "node ./src/main.js"
   },
   "repository": {
     "type": "git",
