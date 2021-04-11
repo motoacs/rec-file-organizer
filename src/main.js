@@ -3,6 +3,8 @@ const moveFile = require('move-file');
 
 // 設定ファイルのパス
 const CONF_JSON_PATH = './RecFileOrganizer.json';
+// 移動先候補のフォルダーリスト
+let folders = [];
 // 読み込んだ設定JSON
 let conf;
 // mainのタイマーid
@@ -28,7 +30,9 @@ async function init() {
   conf = JSON.parse(confJson);
   testMode = conf.testMode;
 
-  intervalId = setInterval(main, conf.intervalMinutes * 60 * 1000);
+  await scanFolders(conf.targetDir);
+
+  intervalIdMain = setInterval(main, conf.intervalMinutes * 60 * 1000);
   intervalIdLog = setInterval(saveLogs, 10000);
   main();
 }
@@ -111,16 +115,29 @@ async function main() {
 // ルールに従ってファイルを移動
 function move(file) {
   return new Promise((resolve, reject) => {
-    const matchedRule = conf.rules.filter((rule) => new RegExp(rule.match).test(file));
-    if (matchedRule.length > 0) {
-      debug && log(`RuleFound: ${JSON.stringify(matchedRule[0])}`);
-      log(`Move: ${file}  ▶  ${matchedRule[0].dest}/`);
+    let tmp;
+    // 移動先はとりあえずその他フォルダ
+    var moveDir = `${conf.targetDir}${conf.others}`;
+    // ターゲットディレクトリ内に名前が一致するフォルダがあればそこへ
+    tmp = folders.filter((folder) => file.includes(folder.split('/').slice(-1)[0]));
+    if (tmp.length > 0) {
+      moveDir = tmp[0];
+    }
+    // conf.jsonのルールに一致するものがあればそこへ
+    tmp = conf.rules.filter((rule) => new RegExp(rule.match).test(file));
+    if (tmp.length > 0) {
+      moveDir = `${conf.targetDir}${tmp[0].dest}`;
+    }
+
+    if (typeof moveDir === 'string' && moveDir.length > 0) {
+      debug && log(`MoveTargetFound: ${moveDir}`);
+      log(`Move: ${file}  ▶  ${moveDir}/`);
       // テストモードでなければ
       if (!testMode){
         // 移動
         moveFile(
           `${conf.sourceDir}${file}`, // source
-          `${conf.targetDir}${matchedRule[0].dest}/${file}`, // destination
+          `${moveDir}/${file}`, // destination
           { overwrite: false }, // overwrite
         ).then(
           () => resolve(), // 成功
@@ -128,7 +145,7 @@ function move(file) {
         );
       }
       else {
-        // log(`TestMode: Move: ${conf.sourceDir}${file}  ▶  ${conf.targetDir}${matchedRule[0].dest}/${file}`);
+        log(`【TestMode】Move: ${conf.sourceDir}${file}  ▶  ${moveDir}/${file}`);
         resolve();
       }
     }
@@ -136,6 +153,24 @@ function move(file) {
       warning(`Warning: マッチするルールが見つかりません: ${file}`);
       resolve();
     }
+  });
+}
+
+
+// フォルダをリストアップ・再帰的にサブフォルダを探索
+async function scanFolders(currentPath, depth = 0) {
+  return new Promise(async (resolve) => {
+    const dir = await fs.readdir(currentPath);
+
+    for (let i = 0; i < dir.length; i++) {
+      const stat = await fs.stat(`${currentPath}/${dir[i]}`);
+
+      if (stat.isDirectory()) {
+        folders.push(`${currentPath}/${dir[i]}`);
+        if (depth < conf.folderSearchDepth) await scanFolders(`${currentPath}/${dir[i]}`, depth + 1);
+      }
+    }
+    resolve();
   });
 }
 
