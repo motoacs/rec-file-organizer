@@ -63,6 +63,9 @@ async function main() {
   debug && log(`AllFiles: ${JSON.stringify(files)}`);
 
   for (let i = 0; i < files.length; i++) {
+    // jsonなら無視
+    if (/-enc\.json$/.test(files[i])) continue;
+
     // 切れ端ファイルを移動
     var fragment = await isFragment(files[i]);
 
@@ -100,6 +103,9 @@ async function main() {
   });
 
   for (let i = 0; i < files.length; i++) {
+    // jsonなら無視
+    if (/-enc\.json$/.test(files[i])) continue;
+
     // 設定日数より経過したファイルなら
     if (reg.test(files[i]) && isOld(files[i].match(reg)[0], conf.thresholdDays)) {
       // ファイルを移動

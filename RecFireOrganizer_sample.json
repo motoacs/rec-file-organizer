@@ -1,60 +1,41 @@
 {
-  "testMode": false,
+  "testMode": true,
 
   "sourceDir": "T:/",
   "targetDir": "T:/",
   "fragmentDir": "T:/_Fragments/",
   "logDir": "./",
+  "folderSearchDepth": 2,
 
   "thresholdDays": 7,
   "intervalMinutes": 1,
 
   "rules": [
     {
-      "dest": "BS1スペシャル",
-      "match": "ＢＳ１スペシャル"
+      "dest": "_ニュース",
+      "match": "(ニュース[7７])|(ニュースウ[ォオ]ッチ[9９])"
     },
     {
-      "dest": "BS世界のドキュメンタリー",
-      "match": "ＢＳ世界のドキュメンタリー"
+      "dest": "コズミックフロント",
+      "match": "コズミック　フロント"
     },
     {
-      "dest": "NHKスペシャル",
-      "match": "ＮＨＫスペシャル"
+      "dest": "ダーウィンが来た！",
+      "match": "ダーウィンが来た"
     },
     {
-      "dest": "SONGS",
-      "match": "ＳＯＮＧＳ「"
-    },
-    {
-      "dest": "SONGS OF TOKYO",
-      "match": "ＳＯＮＧＳ　ＯＦ　ＴＯＫＹＯ"
+      "dest": "プロフェッショナル仕事の流儀",
+      "match": "プロフェッショナル　仕事の流儀"
     },
     {
       "dest": "中井精也の鉄道写真旅",
       "match": "中井精也の((てつたび！)|(鉄道写真旅))"
     },
     {
-      "dest": "__放送中アニメ/Re：ゼロから始める異世界生活 2nd season",
-      "match": "((Re)|(Ｒｅ))：ゼロから始める異世界生活"
-    },
-    {
-      "dest": "__放送中アニメ/のんのんびより のんすとっぷ",
-      "match": "のんのんびより　のんすとっぷ"
-    },
-    {
-      "dest": "__放送中アニメ/はたらく細胞!!",
-      "match": "はたらく細胞!!"
-    },
-    {
-      "dest": "__放送中アニメ/はたらく細胞BLACK",
-      "match": "はたらく細胞BLACK"
-    },
-
-
-    {
-      "dest": "_その他",
-      "match": ".+\\.((mkv)|(mp4))$"
+      "dest": "CYCLE AROUND JAPAN",
+      "match": "CYCLE JAPAN"
     }
-  ]
+  ],
+
+  "others": "_その他"
 }
